@@ -24,9 +24,34 @@ df = spark.read.option("header", "true").option("inferSchema", "true").option(
 df.createOrReplaceTempView("job_postings")
 
 # Show Schema and Sample Data
-print("---This is Diagnostic check, No need to print it in the final doc---")
+#print("---This is Diagnostic check, No need to print it in the final doc---")
 
 # comment the lines below when rendering the submission
-df.printSchema()
-df.show(5)
+#df.printSchema()
+#df.show(5)
+
+# Create industries table
+from pyspark.sql.functions import col, monotonically_increasing_id
+
+industries_df = df.select(
+    col("naics_2022_6"),
+    col("naics_2022_6_name"),
+    col("soc_5").alias("soc_code"),
+    col("soc_5_name").alias("soc_name"),
+    col("lot_specialized_occupation_name").alias("specialized_occupation"),
+    col("lot_occupation_group").alias("occupation_group")
+).distinct().withColumn("industry_id", monotonically_increasing_id())
+
+# Rearrange columns to have industry_id first
+industries_df = industries_df.select(
+    "industry_id",
+    "naics_2022_6",
+    "naics_2022_6_name",
+    "soc_code",
+    "soc_name",
+    "specialized_occupation",
+    "occupation_group"
+)
+
+industries_df.show(5, truncate=False)
 ```
