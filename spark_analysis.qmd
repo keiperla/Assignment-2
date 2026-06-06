@@ -1,0 +1,32 @@
+---
+title: "Spark SQL Job Data Analysis"
+author: "Keily Perla"
+format: html
+embed-resources: true
+date: "2026-06-06"
+date-format: long
+execute:
+  echo: true
+  eval: true
+---
+```{python}
+from pyspark.sql import SparkSession
+
+# Start a Spark session
+spark = SparkSession.builder.config("spark.driver.host", "localhost").appName("JobPostingsAnalysis").getOrCreate()
+spark.catalog.clearCache()
+
+# Load the CSV file into a Spark DataFrame
+df = spark.read.option("header", "true").option("inferSchema", "true").option(
+    "multiLine", "true").option("escape", "\"").csv("data/lightcast_job_postings.csv")
+
+# Register the DataFrame as a temporary SQL view
+df.createOrReplaceTempView("job_postings")
+
+# Show Schema and Sample Data
+print("---This is Diagnostic check, No need to print it in the final doc---")
+
+# comment the lines below when rendering the submission
+df.printSchema()
+df.show(5)
+```
