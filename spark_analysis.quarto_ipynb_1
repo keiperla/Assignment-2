@@ -1,0 +1,201 @@
+{
+ "cells": [
+  {
+   "cell_type": "raw",
+   "id": "284034d0",
+   "metadata": {},
+   "source": [
+    "---\n",
+    "title: \"Spark SQL Job Data Analysis\"\n",
+    "author: \"Keily Perla\"\n",
+    "format: html\n",
+    "embed-resources: true\n",
+    "date: \"2026-06-06\"\n",
+    "date-format: long\n",
+    "execute:\n",
+    "  echo: true\n",
+    "  eval: true\n",
+    "---"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "419257e7",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "WARNING: Using incubator modules: jdk.incubator.vector\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties\n",
+      "Setting default log level to \"WARN\".\n",
+      "To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "26/06/06 23:08:58 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "26/06/06 23:09:01 WARN Utils: Service 'SparkUI' could not bind on port 4040. Attempting port 4041.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "[Stage 0:>                                                          (0 + 1) / 1]\r"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "[Stage 0:===========================================================(1 + 0) / 1]\r",
+      "\r",
+      "                                                                                \r"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "[Stage 1:>                                                          (0 + 1) / 1]\r"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "                                                                                \r"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "26/06/06 23:09:29 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting 'spark.sql.debug.maxToStringFields'.\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "[Stage 2:>                                                          (0 + 1) / 1]\r"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "+-----------+------------+---------------------------------------------+--------+---------------+----------------------+----------------+\n",
+      "|industry_id|naics_2022_6|naics_2022_6_name                            |soc_code|soc_name       |specialized_occupation|occupation_group|\n",
+      "+-----------+------------+---------------------------------------------+--------+---------------+----------------------+----------------+\n",
+      "|0          |541613      |Marketing Consulting Services                |15-2051 |Data Scientists|SAP Analyst / Admin   |2310            |\n",
+      "|1          |311513      |Cheese Manufacturing                         |15-2051 |Data Scientists|Data Analyst          |2311            |\n",
+      "|2          |522110      |Commercial Banking                           |15-2051 |Data Scientists|SAP Analyst / Admin   |2310            |\n",
+      "|3          |485310      |Taxi and Ridesharing Services                |15-2051 |Data Scientists|Data Analyst          |2311            |\n",
+      "|4          |713990      |All Other Amusement and Recreation Industries|15-2051 |Data Scientists|Data Analyst          |2311            |\n",
+      "+-----------+------------+---------------------------------------------+--------+---------------+----------------------+----------------+\n",
+      "only showing top 5 rows\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "                                                                                \r"
+     ]
+    }
+   ],
+   "source": [
+    "from pyspark.sql import SparkSession\n",
+    "\n",
+    "# Start a Spark session\n",
+    "spark = SparkSession.builder.config(\"spark.driver.host\", \"localhost\").appName(\"JobPostingsAnalysis\").getOrCreate()\n",
+    "spark.catalog.clearCache()\n",
+    "\n",
+    "# Load the CSV file into a Spark DataFrame\n",
+    "df = spark.read.option(\"header\", \"true\").option(\"inferSchema\", \"true\").option(\n",
+    "    \"multiLine\", \"true\").option(\"escape\", \"\\\"\").csv(\"data/lightcast_job_postings.csv\")\n",
+    "\n",
+    "# Register the DataFrame as a temporary SQL view\n",
+    "df.createOrReplaceTempView(\"job_postings\")\n",
+    "\n",
+    "# Show Schema and Sample Data\n",
+    "#print(\"---This is Diagnostic check, No need to print it in the final doc---\")\n",
+    "\n",
+    "# comment the lines below when rendering the submission\n",
+    "#df.printSchema()\n",
+    "#df.show(5)\n",
+    "\n",
+    "# Create industries table\n",
+    "from pyspark.sql.functions import col, monotonically_increasing_id\n",
+    "\n",
+    "industries_df = df.select(\n",
+    "    col(\"naics_2022_6\"),\n",
+    "    col(\"naics_2022_6_name\"),\n",
+    "    col(\"soc_5\").alias(\"soc_code\"),\n",
+    "    col(\"soc_5_name\").alias(\"soc_name\"),\n",
+    "    col(\"lot_specialized_occupation_name\").alias(\"specialized_occupation\"),\n",
+    "    col(\"lot_occupation_group\").alias(\"occupation_group\")\n",
+    ").distinct().withColumn(\"industry_id\", monotonically_increasing_id())\n",
+    "\n",
+    "# Rearrange columns to have industry_id first\n",
+    "industries_df = industries_df.select(\n",
+    "    \"industry_id\",\n",
+    "    \"naics_2022_6\",\n",
+    "    \"naics_2022_6_name\",\n",
+    "    \"soc_code\",\n",
+    "    \"soc_name\",\n",
+    "    \"specialized_occupation\",\n",
+    "    \"occupation_group\"\n",
+    ")\n",
+    "\n",
+    "industries_df.show(5, truncate=False)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3",
+   "path": "/usr/share/jupyter/kernels/python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

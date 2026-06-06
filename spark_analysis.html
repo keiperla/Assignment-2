@@ -2238,7 +2238,7 @@ vertical-align: -.125em;
 </header>
 
 
-<div id="68e17a69" class="cell" data-execution_count="1">
+<div id="419257e7" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyspark.sql <span class="im">import</span> SparkSession</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Start a Spark session</span></span>
@@ -2288,7 +2288,10 @@ vertical-align: -.125em;
 Using Spark&#39;s default log4j profile: org/apache/spark/log4j2-defaults.properties
 Setting default log level to &quot;WARN&quot;.
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-26/06/06 23:06:09 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+26/06/06 23:08:58 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+26/06/06 23:09:01 WARN Utils: Service &#39;SparkUI&#39; could not bind on port 4040. Attempting port 4041.
+
+[Stage 0:&gt;                                                          (0 + 1) / 1]
 
 [Stage 0:===========================================================(1 + 0) / 1]
 
@@ -2297,7 +2300,7 @@ To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLeve
 [Stage 1:&gt;                                                          (0 + 1) / 1]
 
                                                                                 
-26/06/06 23:06:24 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting &#39;spark.sql.debug.maxToStringFields&#39;.
+26/06/06 23:09:29 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting &#39;spark.sql.debug.maxToStringFields&#39;.
 
 [Stage 2:&gt;                                                          (0 + 1) / 1]</code></pre>
 </div>
